@@ -43,36 +43,6 @@ const postRequirement= asyncHandler(async(req,res)=>{
     
 })
 
-const putRequirement= asyncHandler(async(req,res)=>{
-    const user = await User.findById(req.params.user_id);
-    if(!user){
-        res.status(400)
-        throw new Error('User Not found')
-    }
-    if(user.role ==1){
-        res.status(401)
-        throw new Error('You are not authorized to add a product')
-    }
-    
-    const {products,remarks,demandBy,dated,category,totalCost }=req.body
-    let products2=JSON.parse(products)
-    const requirement= await Requirement.findById(req.params.requirement_id)
-    if(!requirement){
-        res.status(400)
-        throw new Error('Requirement not Exists')
-    }
-    let data=req.body;
-    data.products=products2
-    data.updatedBy=user.id
-    data.updateTime=new Date().getTime()
-    const updatedRequirement= await Requirement.findByIdAndUpdate(req.params.requirement_id,data,{new:true})
-    if(!updatedRequirement){
-        res.status(400)
-        throw new Error('Requirement not Exists')
-    }
-    res.status(200).json(updatedRequirement)
-})
-
 
 const deleteRequirement = asyncHandler(async(req,res)=>{
     if(!req.params.user_id && !req.params.Requirement_id){ 
@@ -103,5 +73,4 @@ module.exports={
     getRequirement,
     postRequirement,
     deleteRequirement,
-    putRequirement
 }

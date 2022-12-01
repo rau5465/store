@@ -28,7 +28,8 @@ const postProduct = asyncHandler(async(req,res)=>{
        ownerName:user.name
     }
     if(req.body.qty){
-        data.qty=req.body.qty
+        data.qty=parseFloat(req.body.qty)
+        data.qtys=unit=req.body.qty.replace(/[\W\d_]/g, '')
     }
     if(req.body.rate){
         data.rate=req.body.rate
@@ -52,6 +53,7 @@ const postProduct = asyncHandler(async(req,res)=>{
 
 const putProduct= asyncHandler(async(req,res)=>{
     const user = await User.findById(req.params.id);
+    console.log(req.params.id)
     if(!user){
         res.status(400)
         throw new Error('User Not found')
@@ -100,9 +102,10 @@ const deleteProduct = asyncHandler(async(req,res)=>{
 })
 
 
+
 module.exports={
     getProducts,
     postProduct,
     putProduct,
-    deleteProduct
+    deleteProduct,
 }

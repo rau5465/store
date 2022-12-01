@@ -42,7 +42,8 @@ const postEntry= asyncHandler(async(req,res)=>{
       
         records[index].updatedAt=new Date().getTime()
         if(type=='recieved'){
-            records[index].qty +=parseFloat(data.qty)
+            records[index].qty =parseFloat(data.qty) + parseFloat(records[index].qty)
+            records[index].qtys=data.qty.replace(/[\W\d_]/g, '')
             records[index].rate =parseFloat(data.rate)
         }else{
             records[index].qty -=parseFloat(data.qty)
@@ -163,12 +164,85 @@ const deleteEntry = asyncHandler(async(req,res)=>{
     }
     const id=req.params.entry_id
     const entry= await Entry.findById(id)
+    console.log(entry)
+    console.log(id)
     if(!entry){
         res.status(400)
         throw new Error('Entry not Found')
     }
-    await Entry.remove();
-    res.status(200).json({msg:'Entry removed'})
+    await entry.remove();
+    res.status(200).json({msg:'Entry removed',_id:id})
+})
+
+const restoreEntry = asyncHandler(async(req,res)=>{
+    if(!req.params.user_id && !req.params.Entry_id){ 
+        res.status(400)
+        throw new Error('Wrong data recived')
+    }
+    const user = await User.findById(req.params.user_id);
+    if(!user){
+        res.status(400)
+        throw new Error('User not Found')
+    }
+    if(user.role ==1){
+        res.status(401)
+        throw new Error('You are not authorized to delete this product')
+    }
+    const id=req.params.entry_id
+    const entry= await Entry.findById(id)
+    if(!entry){
+        res.status(400)
+        throw new Error('Entry not Found')
+    }
+    let ids=[];
+    let products=entry.products
+    products.map(c=>{
+        ids.push(c._id)
+    })
+    let records = await Product.find({ '_id': { $in: ids } });
+ 
+    records.map((product,index)=>{
+        const data=products.filter(c=>c._id==product._id)[0]
+            records[index].updatedAt=new Date().getTime()
+        if(entry.type=='recieved'){
+            records[index].qty =parseFloat(records[index].qty)- parseFloat(data.qty)
+            records[index].qtys=data.qty.replace(/[\W\d_]/g, '')
+            records[index].rate =parseFloat(data.rate)
+        }else{
+            records[index].qty = parseFloat(records[index].qty)+ parseFloat(data.qty)
+            if(records[index].used){
+                records[index].used =parseFloat(records[index].used)-parseFloat(data.qty)
+            }else{
+                records[index].used=0
+            }
+        }
+        records[index].updatedBy=user.id
+        records[index].ownerName=user.name
+    })
+
+    const bulkOps = records.map(obj => {
+        return {
+          updateOne: {
+            filter: {
+              _id: obj._id
+            },
+            update: {
+                qty:obj.qty,
+                used:obj.used,
+                rate:obj.rate
+            }
+          }
+        }
+      })
+
+      const ress= await Product.bulkWrite(bulkOps)
+      if(!ress){
+        res.status(400)
+        throw new Error('All Products or some not updated')
+      }
+
+    await entry.remove();
+    res.status(200).json({msg:'Entry removed',_id:id})
 })
 
 
@@ -176,5 +250,6 @@ module.exports={
     getEntry,
     postEntry,
     deleteEntry,
-    putEntry
+    putEntry,
+    restoreEntry
 }
