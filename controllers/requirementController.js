@@ -4,8 +4,8 @@ const Product = require('../model/productModel');
 const Requirement = require('../model/requirementModel');
 
 const getRequirement= asyncHandler(async(req,res)=>{
-    const requirement= await Requirement.find().select('-__v')
-    res.status(200).json(requirement)
+    const requirement= await Requirement.find()
+    res.status(200).json(requirement.reverse())
 })
 
 const postRequirement= asyncHandler(async(req,res)=>{
@@ -45,7 +45,7 @@ const postRequirement= asyncHandler(async(req,res)=>{
 
 
 const deleteRequirement = asyncHandler(async(req,res)=>{
-    if(!req.params.user_id && !req.params.Requirement_id){ 
+    if(!req.params.user_id && !req.params.requirement_id){ 
         res.status(400)
         throw new Error('Wrong data recived')
     }
@@ -64,8 +64,8 @@ const deleteRequirement = asyncHandler(async(req,res)=>{
         res.status(400)
         throw new Error('Requirement not Found')
     }
-    await Requirement.remove();
-    res.status(200).json({msg:'Requirement removed'})
+    await requirement.remove();
+    res.status(200).json({msg:'Requirement removed',_id:id})
 })
 
 

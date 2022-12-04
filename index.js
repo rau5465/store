@@ -23,6 +23,7 @@ app.use('/api/product',require('./routes/product'))
 app.use('/api/entry',require('./routes/entry'))
 app.use('/api/contact',require('./routes/contact'))
 app.use('/api/requirement',require('./routes/requirement'))
+app.use('/api/history',require('./routes/history'))
 
 app.use(errorHandler);
 

@@ -4,7 +4,7 @@ const { getRequirement, postRequirement, deleteRequirement }=require("../control
 
 router.route('/').get(getRequirement);
 router.route('/:id').post(postRequirement)
-router.route('/:user_id/:entry_id').delete(deleteRequirement);
+router.route('/:user_id/:requirement_id').delete(deleteRequirement);
 
 
 module.exports=router
